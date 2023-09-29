@@ -1,0 +1,7 @@
+- !grant
+  role: !group conjur/authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/apps
+  member: !group /data/bnl/ocp-apps
+
+#- !grant
+#  role: !group vault1/lob1/ocp-safe/delegation/consumers
+#  member: !group /data/bnl/ocp-apps  

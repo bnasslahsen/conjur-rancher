@@ -1,0 +1,12 @@
+- !host
+  id: test-app
+  annotations:
+    authn-k8s/namespace: $APP_NAMESPACE
+    authn-k8s/service-account: test-app-sa
+    authn-k8s/authentication-container-name: configurator
+
+- !grant
+  roles:
+    - !group conjur/authn-k8s/$CYBERARK_CONJUR_AUTHENTICATOR_ID/consumers
+  members:
+    - !host test-app

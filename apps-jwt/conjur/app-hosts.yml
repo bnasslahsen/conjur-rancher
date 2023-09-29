@@ -1,0 +1,49 @@
+# conjur policy update -f app-hosts.yml -b data/bnl
+- !policy
+  id: data/bnl/ocp-apps
+  body:
+    - !group
+    - &hosts
+      - !host
+        id: system:serviceaccount:$APP_NAMESPACE:demo-app-secrets-provider-init-sa
+        annotations:
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/namespace: $APP_NAMESPACE
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/serviceaccount/name: demo-app-secrets-provider-init-sa
+      - !host
+        id: system:serviceaccount:$APP_NAMESPACE:demo-app-jwt-sa
+        annotations:
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/namespace: $APP_NAMESPACE
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/serviceaccount/name: demo-app-jwt-sa
+      - !host
+        id: system:serviceaccount:$APP_NAMESPACE:demo-app-secrets-provider-sidecar-sa
+        annotations:
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/namespace: $APP_NAMESPACE
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/serviceaccount/name: demo-app-secrets-provider-sidecar-sa
+      - !host
+        id: system:serviceaccount:$APP_NAMESPACE:demo-app-push-to-file-sidecar-sa
+        annotations:
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/namespace: $APP_NAMESPACE
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/serviceaccount/name: demo-app-push-to-file-sidecar-sa
+      - !host
+        id: system:serviceaccount:$APP_NAMESPACE:demo-app-summon-init-sa
+        annotations:
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/namespace: $APP_NAMESPACE
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/serviceaccount/name: demo-app-summon-init-sa
+      - !host
+        id: system:serviceaccount:$APP_NAMESPACE:demo-app-summon-sidecar-sa
+        annotations:
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/namespace: $APP_NAMESPACE
+          authn-jwt/$CYBERARK_CONJUR_AUTHENTICATOR_ID/kubernetes.io/serviceaccount/name: demo-app-summon-sidecar-sa
+   
+    - !grant
+      role: !group
+      members: *hosts
+    - &variables
+      - !variable url
+      - !variable username
+      - !variable password
+    - !permit
+      role: !group
+      privilege: [ read, execute ]
+      resource: *variables
+

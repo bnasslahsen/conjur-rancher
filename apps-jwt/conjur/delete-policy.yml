@@ -1,0 +1,4 @@
+# conjur policy update -b  root -f delete-policy.yml
+- !delete
+  record: !policy data/bnl/ocp-apps
+

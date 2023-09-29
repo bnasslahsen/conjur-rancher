@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-app-summon-init
+  name: test-app-summon-init
+  namespace: $APP_NAMESPACE
+spec:
+  selector:
+    matchLabels:
+      app: test-app-summon-init
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-app-summon-init
+    spec:
+      serviceAccountName: test-app-sa
+      containers:
+        - name: test-app-summon-init
+          image: bnasslahsem/conjur-summon-k8s-demo
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONJUR_AUTHN_TOKEN_FILE
+              value: /run/conjur/access-token
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: conjur-connect
+          volumeMounts:
+            - mountPath: /run/conjur
+              name: conjur-access-token
+              readOnly: true
+            - mountPath: /etc/summon
+              name: summon-config
+              readOnly: true
+      initContainers:
+        - image: cyberark/conjur-authn-k8s-client
+          imagePullPolicy: IfNotPresent
+          name: configurator
+          env:
+            - name: CONJUR_AUTHN_LOGIN
+              value: host/test-app
+            - name: CONTAINER_MODE
+              value: init
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          envFrom:
+            - configMapRef:
+                name: conjur-connect
+          volumeMounts:
+            - mountPath: /run/conjur
+              name: conjur-access-token
+            - mountPath: /etc/conjur/ssl
+              name: conjur-client-ssl
+      volumes:
+        - name: conjur-access-token
+          emptyDir:
+            medium: Memory
+        - name: conjur-client-ssl
+          emptyDir:
+            medium: Memory
+        - name: summon-config
+          configMap:
+            name: summon-config-init
+            defaultMode: 420
+      imagePullSecrets:
+        - name: ocirsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-summon-init
+  namespace: $APP_NAMESPACE
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      nodePort: 32184
+  selector:
+    app: test-app-summon-init
+---
